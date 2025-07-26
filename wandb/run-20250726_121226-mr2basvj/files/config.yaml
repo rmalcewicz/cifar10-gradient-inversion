@@ -1,0 +1,88 @@
+_wandb:
+    value:
+        cli_version: 0.21.0
+        e:
+            0ylczd5poog46jqro856ubtbbgsw15nx:
+                args:
+                    - experiment.name=exp2
+                    - reconstruction.lr=0.1
+                    - reconstruction.num_iterations=500
+                cpu_count: 16
+                cpu_count_logical: 32
+                cudaVersion: "12.4"
+                disk:
+                    /:
+                        total: "53660876800"
+                        used: "41914392576"
+                email: rafal.malcewicz@gmail.com
+                executable: /home/scratch/rmalcewi/anaconda3/envs/grad_attack/bin/python
+                git:
+                    commit: ab5e350e2e2f3e4ea199cca094158d016dffe9dd
+                    remote: git@github.com:rmalcewicz/cifar10-gradient-inversion.git
+                gpu: NVIDIA TITAN Xp
+                gpu_count: 4
+                gpu_nvidia:
+                    - architecture: Pascal
+                      cudaCores: 3840
+                      memoryTotal: "12884901888"
+                      name: NVIDIA TITAN Xp
+                      uuid: GPU-78477696-6b9f-c52f-4184-37ff1d7a601e
+                    - architecture: Maxwell
+                      cudaCores: 3072
+                      memoryTotal: "12884901888"
+                      name: NVIDIA GeForce GTX TITAN X
+                      uuid: GPU-9647b462-adb8-ffd3-5cfc-75b277f4b7f9
+                    - architecture: Maxwell
+                      cudaCores: 3072
+                      memoryTotal: "12884901888"
+                      name: NVIDIA GeForce GTX TITAN X
+                      uuid: GPU-6a1426b6-a74e-2c69-e623-b75ef6516f3c
+                    - architecture: Pascal
+                      cudaCores: 3840
+                      memoryTotal: "12884901888"
+                      name: NVIDIA TITAN Xp
+                      uuid: GPU-772b7251-d311-9ec5-3818-9a93574a3ed4
+                host: gpu6.int.autonlab.org
+                memory:
+                    total: "270178377728"
+                os: Linux-3.10.0-1160.119.1.el7.x86_64-x86_64-with-glibc2.17
+                program: -m scripts.run_reconstruction
+                python: CPython 3.13.5
+                root: /zfsauton2/home/rmalcewi/summer2025/cifar10-gradient-inversion
+                startedAt: "2025-07-26T16:12:26.578051Z"
+                writerId: 0ylczd5poog46jqro856ubtbbgsw15nx
+        m: []
+        python_version: 3.13.5
+        t:
+            "1":
+                - 1
+                - 41
+                - 50
+            "2":
+                - 1
+                - 41
+                - 50
+            "3":
+                - 13
+                - 16
+                - 24
+            "4": 3.13.5
+            "5": 0.21.0
+            "12": 0.21.0
+            "13": linux-x86_64
+data:
+    value:
+        batch_size: 1
+        class_a: cat
+        class_b: dog
+experiment:
+    value:
+        name: exp2
+        save_dir: saved
+reconstruction:
+    value:
+        lr: 0.1
+        num_iterations: 500
+        tv_coeff: 0.001
+wandb_log:
+    value: false

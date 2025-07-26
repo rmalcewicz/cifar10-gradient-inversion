@@ -1,0 +1,3 @@
+- experiment.name=exp2
+- reconstruction.lr=0.1
+- reconstruction.num_iterations=500

@@ -1,0 +1,14 @@
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+Error executing job with overrides: ['experiment.name=exp2', 'reconstruction.lr=0.1', 'reconstruction.num_iterations=500']
+Traceback (most recent call last):
+  File "/zfsauton2/home/rmalcewi/summer2025/cifar10-gradient-inversion/scripts/run_reconstruction.py", line 53, in main
+    recon = reconstruct(
+        grad_path=exp_dir,
+    ...<4 lines>...
+        wandb_log = True
+    )
+  File "/zfsauton2/home/rmalcewi/summer2025/cifar10-gradient-inversion/src/inversion.py", line 38, in reconstruct
+    tv = TVLoss()
+TypeError: TVLoss() missing 1 required positional argument: 'x'
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.

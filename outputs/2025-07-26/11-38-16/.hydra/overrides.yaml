@@ -1,0 +1,4 @@
+- experiment.name=exp2
+- data.class_a=cat
+- data.class_b=dog
+- data.batch_size=1

@@ -1,0 +1,35 @@
+[34m[1mwandb[0m: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+[0] Gradient loss: 0.7148943543, Total loss: 0.7171534300
+[50] Gradient loss: 0.0027106404, Total loss: 0.0030291674
+[100] Gradient loss: 0.0021904707, Total loss: 0.0024096048
+[150] Gradient loss: 0.0002572536, Total loss: 0.0004206593
+[200] Gradient loss: 0.0001817942, Total loss: 0.0003136491
+[250] Gradient loss: 0.0001823902, Total loss: 0.0002977640
+[300] Gradient loss: 0.0000893474, Total loss: 0.0001986136
+[350] Gradient loss: 0.0000941753, Total loss: 0.0001973754
+[400] Gradient loss: 0.0000736713, Total loss: 0.0001742145
+[450] Gradient loss: 0.0000637174, Total loss: 0.0001618539
+Error executing job with overrides: ['experiment.name=exp2', 'reconstruction.lr=0.1', 'reconstruction.num_iterations=500']
+Traceback (most recent call last):
+  File "/zfsauton2/home/rmalcewi/summer2025/cifar10-gradient-inversion/scripts/run_reconstruction.py", line 53, in main
+    recon = reconstruct(
+        grad_path=exp_dir,
+    ...<4 lines>...
+        wandb_log = True
+    )
+  File "/zfsauton2/home/rmalcewi/summer2025/cifar10-gradient-inversion/src/inversion.py", line 88, in reconstruct
+    wandb.log({"reconstruction": wandb.Image(dummy_input.detach().cpu())})
+                                 ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/scratch/rmalcewi/anaconda3/envs/grad_attack/lib/python3.13/site-packages/wandb/sdk/data_types/image.py", line 266, in __init__
+    self._initialize_from_data(data_or_path, mode, file_type, normalize)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/scratch/rmalcewi/anaconda3/envs/grad_attack/lib/python3.13/site-packages/wandb/sdk/data_types/image.py", line 405, in _initialize_from_data
+    mode = mode or self.guess_mode(data, file_type)
+                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/scratch/rmalcewi/anaconda3/envs/grad_attack/lib/python3.13/site-packages/wandb/sdk/data_types/image.py", line 603, in guess_mode
+    raise ValueError(
+        f"Un-supported shape for image conversion {list(data.shape)}"
+    )
+ValueError: Un-supported shape for image conversion [2, 3, 32, 32]
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.

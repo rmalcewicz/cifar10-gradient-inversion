@@ -1,12 +1,15 @@
 import os
 import torch
+import torchvision
 import torch.nn as nn
 import torchvision.utils as vutils
 from torch.optim.lr_scheduler import StepLR
 
-from src.utils import load_gradients, TVLoss
+from src.utils import TVLoss
 from src.model import ConvNet
-import torchvision
+from src.evaluation import evaluate_reconstruction
+
+
 
 def reconstruct(
     grad_path: str,
@@ -16,6 +19,8 @@ def reconstruct(
     lr: float = 0.1,
     wandb_log: bool = False
 ):
+    if wandb_log:
+        import wandb
 
     true_grad = torch.load(f"{grad_path}/batch_gradient.pt").to(device)
     true_labels = torch.load(f"{grad_path}/batch_labels.pt").to(device)
@@ -32,10 +37,14 @@ def reconstruct(
     scheduler = StepLR(optimizer, step_size=1000, gamma=0.5)
     criterion = nn.CrossEntropyLoss()
     cosine_similarity = nn.CosineSimilarity(dim=0)
-    tv = TVLoss()
+    tv = TVLoss
 
     os.makedirs(f"{grad_path}/results", exist_ok=True)
     vutils.save_image(true_images.detach().cpu(), f"{grad_path}/results/true.png", nrow=8, normalize=True)
+    if wandb_log:
+        grid_image = vutils.make_grid(true_images.detach().cpu(), nrow=4, padding=2, normalize=True)
+        image_for_wandb = grid_image.mul(255).add_(0.5).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()
+        wandb.log({"original_images_grid": wandb.Image(image_for_wandb)})
     
     for i in range(num_iterations):
         optimizer.zero_grad()
@@ -81,6 +90,19 @@ def reconstruct(
     # Final output
     vutils.save_image(dummy_input.detach().cpu(), f"{grad_path}/results/reconstruction.png", nrow=8, normalize=True)
     if wandb_log:
-        wandb.log({"reconstruction": wandb.Image(dummy_input.detach().cpu())})
+        grid_image = vutils.make_grid(dummy_input.detach().cpu(), nrow=4, padding=2, normalize=True)
+        image_for_wandb = grid_image.mul(255).add_(0.5).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()
+        wandb.log({"reconstructed_images_grid": wandb.Image(image_for_wandb)})
     
+    # Final evaluation
+    metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
+    print(f"PSNR: {metrics['psnr']:.3f}, SSIM: {metrics['ssim']:.3f}")
+
+    if wandb_log:
+        wandb.log({
+            "psnr": metrics["psnr"],
+            "ssim": metrics["ssim"]
+        })
+
+
     return dummy_input.detach().cpu()
