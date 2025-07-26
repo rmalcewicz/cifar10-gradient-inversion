@@ -4,3 +4,5 @@ __pycache__/
 *.pt
 data/
 .env
+results/
+saved/

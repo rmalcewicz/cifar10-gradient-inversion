@@ -6,4 +6,4 @@ import torch
 from src.train_capture import capture_batch
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-capture_batch(device, class_a = "cat", class_b = "dog", experiment_name="exp1", batch_size=1)
+capture_batch(device, class_a = "cat", class_b = "dog", experiment_name="exp2", batch_size=2)

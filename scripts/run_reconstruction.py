@@ -15,10 +15,10 @@ def main():
 
     reconstructed = reconstruct(
         device=device,
-        lr=0.1,
+        lr=0.01,
         iterations=4000,
-        tv_weight=5e-4,
-        grad_path="saved/exp1"
+        tv_weight=1e-2,
+        grad_path="saved/exp2"
     )
     # Save image grid
     vutils.save_image(reconstructed, f"{output_dir}/reconstructed.png", nrow=8, normalize=True)
