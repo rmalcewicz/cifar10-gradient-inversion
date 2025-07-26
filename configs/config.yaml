@@ -1,0 +1,18 @@
+defaults:
+  - override hydra/job_logging: disabled
+
+experiment:
+  name: "exp1"
+  save_dir: "saved"
+
+data:
+  class_a: "cat"
+  class_b: "dog"
+  batch_size: 1
+
+reconstruction:
+  tv_coeff: 1e-6
+  num_iterations: 200
+  lr: 0.1
+
+wandb_log: false
