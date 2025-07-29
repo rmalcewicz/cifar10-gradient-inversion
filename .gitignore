@@ -6,3 +6,4 @@ data/
 .env
 results/
 saved/
+outputs/

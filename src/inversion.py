@@ -5,30 +5,33 @@ import torch.nn as nn
 import torchvision.utils as vutils
 from torch.optim.lr_scheduler import StepLR
 
-from src.utils import TVLoss
+from src.utils import TVLoss, Batch_data
 from src.model import ConvNet
 from src.evaluation import evaluate_reconstruction
 
 
 
 def reconstruct(
-    grad_path: str,
     device: str,
+    batch_data: Batch_data,
+    output_path: str,
+    batch_idx:int,
     num_iterations: int = 500,
     tv_coeff: float = 1e-6,
     lr: float = 0.1,
-    wandb_log: bool = False
+    wandb_log: bool = False 
 ):
     if wandb_log:
         import wandb
 
-    true_grad = torch.load(f"{grad_path}/batch_gradient.pt").to(device)
-    true_labels = torch.load(f"{grad_path}/batch_labels.pt").to(device)
-    true_images = torch.load(f"{grad_path}/batch_images.pt")
+    
+    true_grad = batch_data.gradient
+    true_labels = batch_data.labels
+    true_images = batch_data.images
 
 
     model = ConvNet(input_shape=(3, 32, 32), n_classes=2).to(device)
-    model.load_state_dict(torch.load(f"{grad_path}/model_state.pt"))
+    model.load_state_dict(batch_data.model_state)
     model.eval()
 
     dummy_input = torch.randn((len(true_labels), 3, 32, 32)).to(device).detach()
@@ -39,8 +42,8 @@ def reconstruct(
     cosine_similarity = nn.CosineSimilarity(dim=0)
     tv = TVLoss
 
-    os.makedirs(f"{grad_path}/results", exist_ok=True)
-    vutils.save_image(true_images.detach().cpu(), f"{grad_path}/results/true.png", nrow=8, normalize=True)
+    os.makedirs(f"{output_path}/batch_{batch_idx}", exist_ok=True)
+    vutils.save_image(true_images.detach().cpu(), f"{output_path}/batch_{batch_idx}/true.png", nrow=8, normalize=True)
     if wandb_log:
         grid_image = vutils.make_grid(true_images.detach().cpu(), nrow=4, padding=2, normalize=True)
         image_for_wandb = grid_image.mul(255).add_(0.5).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()
@@ -68,17 +71,17 @@ def reconstruct(
 
         # Save debug image every 200 iters
         if i % 200 == 0:
-            vutils.save_image(dummy_input.detach().cpu(), f"{grad_path}/results/debug_{i}.png", nrow=8, normalize=True)
+            vutils.save_image(dummy_input.detach().cpu(), f"{output_path}/batch_{batch_idx}/debug_{i}.png", nrow=8, normalize=True)
         
         # Log to wandb
-            if wandb_log and (i % 10 == 0 or i == num_iterations - 1):
-                import wandb
-                wandb.log({
-                    "iteration": i,
-                    "grad_loss": grad_loss.item(),
-                    "tv_loss": tv_loss.item(),
-                    "total_loss": total_loss.item()
-                })
+        if wandb_log and (i % 10 == 0 or i == num_iterations - 1):
+            import wandb
+            wandb.log({
+                "iteration": i,
+                "grad_loss": grad_loss.item(),
+                "tv_loss": tv_loss.item(),
+                "total_loss": total_loss.item()
+            })
         
         # Print to console
         if i % 50 == 0:
@@ -88,7 +91,9 @@ def reconstruct(
         assert dummy_grad.shape == true_grad.shape, f"{dummy_grad.shape} vs {true_grad.shape}"
 
     # Final output
-    vutils.save_image(dummy_input.detach().cpu(), f"{grad_path}/results/reconstruction.png", nrow=8, normalize=True)
+    os.makedirs(f"{output_path}/recons", exist_ok=True)
+    torch.save(dummy_input.detach().cpu(), f"{output_path}/recons/batch_{batch_idx}.pt")
+    vutils.save_image(dummy_input.detach().cpu(), f"{output_path}/batch_{batch_idx}/reconstruction.png", nrow=8, normalize=True)
     if wandb_log:
         grid_image = vutils.make_grid(dummy_input.detach().cpu(), nrow=4, padding=2, normalize=True)
         image_for_wandb = grid_image.mul(255).add_(0.5).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()

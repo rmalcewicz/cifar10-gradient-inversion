@@ -19,7 +19,9 @@ def main(cfg:DictConfig):
         class_a=cfg.data.class_a,
         class_b=cfg.data.class_b,
         experiment_name=cfg.experiment.name,
-        batch_size=cfg.data.batch_size
+        base_save_dir=exp_dir,
+        batch_size=cfg.data.batch_size,
+        capture_batch_idx=cfg.data.capture_batch_idx
     )
 
 if __name__ == "__main__":
