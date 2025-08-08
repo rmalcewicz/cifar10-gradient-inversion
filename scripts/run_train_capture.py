@@ -9,17 +9,21 @@ from src.train_capture import capture_batch
 
 def main(cfg:DictConfig):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Running on {device}")
+    #print(f"Running on {device}")
 
-    exp_dir = os.path.join(cfg.experiment.save_dir, cfg.experiment.name)
-    os.makedirs(exp_dir, exist_ok=True)
+    exp_name = cfg.experiment.name
+    run_idx = cfg.data.repetition
+    batch_size = cfg.data.batch_size
+
+    output_path = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/batch_data"
+    os.makedirs(output_path, exist_ok=True)
 
     capture_batch(
         device=device,
         class_a=cfg.data.class_a,
         class_b=cfg.data.class_b,
         experiment_name=cfg.experiment.name,
-        base_save_dir=exp_dir,
+        output_path=output_path,
         batch_size=cfg.data.batch_size,
         capture_batch_idx=cfg.data.capture_batch_idx
     )

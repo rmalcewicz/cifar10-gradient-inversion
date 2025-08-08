@@ -3,7 +3,6 @@ import hydra
 import torch
 import wandb
 from omegaconf import DictConfig, OmegaConf
-import json
 
 from src.inversion import reconstruct
 from src.utils import Batch_data
@@ -16,7 +15,10 @@ def main(cfg: DictConfig):
     exp_dir = os.path.join(cfg.experiment.save_dir, exp_name)
     os.makedirs(exp_dir, exist_ok=True)
 
-    output_path = f"saved/{exp_name}/results"
+    run_idx = cfg.data.repetition
+    batch_size = cfg.data.batch_size
+    output_path = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/results"
+    input_path = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/batch_data"
     os.makedirs(output_path, exist_ok=True)
 
     batch_idx = cfg.data.capture_batch_idx
@@ -24,13 +26,14 @@ def main(cfg: DictConfig):
     for idx in batch_idx:
 
         batch_data = Batch_data()
-        batch_data.load(exp_name, idx)
+        batch_data.load(input_path, idx, skip = False)
+        batch_data.remove(input_path, idx)
 
         wandb_config_dict = OmegaConf.to_container(cfg, resolve=True, throw_on_missing=False)
         if cfg.wandb_log:
             wandb.init(
                 project="cifar10-gradient-inversion",
-                name=exp_name,
+                name=f"{exp_name}/run_{run_idx}/batch_size_{batch_size}/batch_{idx}",
                 config=wandb_config_dict,
                 dir=exp_dir
             )

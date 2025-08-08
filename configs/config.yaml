@@ -1,8 +1,14 @@
 defaults:
   - _self_
+  - override hydra/launcher: joblib # This line tells Hydra to use a launcher called 'joblib'
+
+hydra:
+  launcher:
+    n_jobs: -1 # Here's where we set the number of parallel jobs
+    backend: "multiprocessing"
 
 experiment:
-  name: "default_exp"
+  name: "${data.class_a}_vs_${data.class_b}"
   save_dir: "saved"
   seed: 42
 
@@ -10,11 +16,28 @@ data:
   class_a: "cat"
   class_b: "dog"
   batch_size: 1
-  capture_batch_idx: [100, 200, 300]
+  capture_batch_idx: [0, 20, 40, 60, 80]
+  repetition: 0
+  original: False
 
 reconstruction:
-  tv_coeff: 1e-3
-  num_iterations: 200
+  tv_coeff: 5e-3
+  num_iterations: 10000
   lr: 0.1
+
+clip:
+  model: "ViT-B/32"
+  prompts: [
+    "a photo of a airplane",
+    "a photo of a automobile",
+    "a photo of a bird",
+    "a photo of a cat",
+    "a photo of a deer",
+    "a photo of a dog",
+    "a photo of a frog",
+    "a photo of a horse",
+    "a photo of a ship",
+    "a photo of a truck"
+  ]
 
 wandb_log: False

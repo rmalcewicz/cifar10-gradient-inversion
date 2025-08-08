@@ -10,7 +10,7 @@ def capture_batch(
     device: str,
     class_a: str,
     class_b: str,
-    base_save_dir: str,
+    output_path: str,
     capture_batch_idx: list = [100],
     experiment_name: str = "exp1",
     batch_size: int = 1
@@ -54,7 +54,7 @@ def capture_batch(
             grad = [p.grad.clone().detach() for p in model.parameters()]
             flat_grad = torch.cat([g.view(-1) for g in grad])
 
-            batch_data_path = os.path.join(base_save_dir, "batch_data", f"batch_{i}")
+            batch_data_path = os.path.join(output_path, f"batch_{i}")
 
             os.makedirs(f"{batch_data_path}", exist_ok=True)
             torch.save(images.detach().cpu(), f"{batch_data_path}/batch_images.pt")
@@ -62,7 +62,7 @@ def capture_batch(
             torch.save(flat_grad.cpu(), f"{batch_data_path}/batch_gradient.pt")
             torch.save(model.state_dict(), f"{batch_data_path}/model_state.pt")
 
-            print(f"Saved batch {i}")
+            #print(f"Saved batch {i}")
 
             if i >= max(capture_batch_idx):
                 break

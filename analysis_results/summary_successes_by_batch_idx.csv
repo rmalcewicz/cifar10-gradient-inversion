@@ -1,0 +1,6 @@
+batch_idx,recon_successes,ori_successes
+0,175,629
+100,156,620
+200,154,627
+300,158,635
+400,173,623

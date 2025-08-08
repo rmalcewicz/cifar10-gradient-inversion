@@ -21,3 +21,6 @@ data:
     exp_name: "default_exp"
     class_a: "cat"
     class_b: "dog"
+    run_idx: 1
+    batch_size: 1
+    original: False

@@ -1,0 +1,18 @@
+# @package _self_
+
+# Define the classes to run
+data:
+  class_a:
+    - "airplane"
+    - "automobile"
+    - "bird"
+  class_b:
+    - "cat"
+    - "dog"
+    - "frog"
+
+  # Define the repetition indices to run
+  repetition: range(0, 5)
+
+  # Define the batch sizes to run
+  batch_size: [1, 2, 4, 8, 16]

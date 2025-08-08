@@ -5,5 +5,9 @@ __pycache__/
 data/
 .env
 results/
+saved1/
+saved2/
 saved/
 outputs/
+saved_experiments/
+multirun/

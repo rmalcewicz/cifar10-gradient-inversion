@@ -31,10 +31,16 @@ class Batch_data:
         self.labels = None
         self.model_state = None
     
-    def load(self, exp_name, batch_n):
-        target_path = f"saved/{exp_name}/batch_data/batch_{batch_n}"
-
-        self.gradient = torch.load(f"{target_path}/batch_gradient.pt")
+    def load(self, batch_path, batch_n, skip=True):
+        target_path = f"{batch_path}/batch_{batch_n}"
+        if not skip:
+            self.gradient = torch.load(f"{target_path}/batch_gradient.pt")
+            self.model_state = torch.load(f"{target_path}/model_state.pt")
         self.images = torch.load(f"{target_path}/batch_images.pt")
         self.labels = torch.load(f"{target_path}/batch_labels.pt")
-        self.model_state = torch.load(f"{target_path}/model_state.pt")
+        
+    
+    def remove(self, batch_path, batch_n):
+        target_path = f"{batch_path}/batch_{batch_n}"
+        os.remove(f"{target_path}/batch_gradient.pt")
+        os.remove(f"{target_path}/model_state.pt")
