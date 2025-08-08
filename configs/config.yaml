@@ -1,10 +1,11 @@
 defaults:
   - _self_
-  - override hydra/launcher: joblib # This line tells Hydra to use a launcher called 'joblib'
+  - paths: default
+  - override hydra/launcher: joblib
 
 hydra:
   launcher:
-    n_jobs: -1 # Here's where we set the number of parallel jobs
+    n_jobs: -1 
     backend: "multiprocessing"
 
 experiment:

@@ -7,7 +7,7 @@ from omegaconf import DictConfig, OmegaConf
 import os 
 import json  
 
-@hydra.main(config_path="../configs", config_name="classify_clip", version_base=None) 
+@hydra.main(config_path="../configs", config_name="config", version_base=None) 
 def main(cfg: DictConfig): 
     device = "cuda" if torch.cuda.is_available() else "cpu" 
      
@@ -21,7 +21,7 @@ def main(cfg: DictConfig):
     # model = CLIPModel.from_pretrained(model_name).eval().to(device) 
     # processor = CLIPProcessor.from_pretrained(model_name, use_fast=False)
         
-    model_path = "/zfsauton2/home/rmalcewi/.cache/huggingface/hub/models--openai--clip-vit-base-patch32/snapshots/3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"    
+    model_path = cfg.paths.clip_base_path
     
     model = CLIPModel.from_pretrained(model_path).eval().to(device) 
     processor = CLIPProcessor.from_pretrained(model_path, use_fast=False) 
@@ -38,10 +38,11 @@ def main(cfg: DictConfig):
     class_a = cfg.data.class_a 
     class_b = cfg.data.class_b 
 
-    reconstructed_label_to_name_map = { 
-        0: class_a, 
-        1: class_b 
-    } 
+    output_path = cfg.paths.clip_results_dir
+    recons_path = os.path.join(cfg.paths.reconstruction_results_dir, "recons")
+    original_path = cfg.paths.batch_data_dir
+
+    os.makedirs(output_path, exist_ok=True)
 
     cifar10_class_names = [  
         "airplane", "automobile", "bird", "cat", "deer",  
@@ -49,17 +50,16 @@ def main(cfg: DictConfig):
     ] 
      
     for idx in batch_idx: 
-        #print(f"\n Processing {exp_name} batch_{idx} ...") 
 
-        images_batch_file = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/results/recons/batch_{idx}_images.pt" 
-        labels_batch_file = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/results/recons/batch_{idx}_labels.pt" 
+        images_batch_file = os.path.join(recons_path, f"batch_{idx}_images.pt") 
+        labels_batch_file = os.path.join(recons_path, f"batch_{idx}_labels.pt")  
 
         if cfg.data.original: 
-            images_batch_file = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/batch_data/batch_{idx}/batch_images.pt" 
+            images_batch_file = os.path.join(original_path, f"batch_{idx}/batch_images.pt") 
 
 
         if not os.path.exists(images_batch_file): 
-            #print(f"Batch file not found: {images_batch_file}. Skipping this batch.") 
+            print(f"Batch file not found: {images_batch_file}. Skipping this batch.") 
             continue 
 
         images_tensor_batch = torch.load(images_batch_file) 
@@ -104,8 +104,6 @@ def main(cfg: DictConfig):
          
         # Check for conflict 
         if top1_label0_idx == top1_label1_idx: 
-            #print(f"Conflict detected: Both labels ({reconstructed_label_to_name_map[0]} and {reconstructed_label_to_name_map[1]}) " 
-            #f"prefer class {cifar10_class_names[top1_label0_idx]}.") 
 
             # Determine which label has higher confidence for the shared top class 
             prob_label0_for_shared_class = top2_values[0, 0] 
@@ -148,11 +146,10 @@ def main(cfg: DictConfig):
             'selected_class_1': final_selected_class_names[1] 
         } 
          
-        json_dir = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/clip_results" 
-        os.makedirs(json_dir, exist_ok=True) 
-        json_path = json_dir + f"/batch_{idx}_recon.json" 
+        os.makedirs(output_path, exist_ok=True) 
+        json_path = output_path + f"/batch_{idx}_recon.json" 
         if cfg.data.original: 
-            json_path = json_dir + f"/batch_{idx}_original.json" 
+            json_path = output_path + f"/batch_{idx}_original.json" 
         with open(json_path, 'w') as f: 
             json.dump(final_result_dict, f, indent=4) 
         #print(f"Results saved to: {json_path}") 

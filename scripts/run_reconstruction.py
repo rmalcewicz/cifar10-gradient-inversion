@@ -17,8 +17,8 @@ def main(cfg: DictConfig):
 
     run_idx = cfg.data.repetition
     batch_size = cfg.data.batch_size
-    output_path = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/results"
-    input_path = f"saved/{exp_name}/run_{run_idx}/batch_size_{batch_size}/batch_data"
+    output_path = cfg.paths.reconstruction_results_dir
+    input_path = cfg.paths.batch_data_dir
     os.makedirs(output_path, exist_ok=True)
 
     batch_idx = cfg.data.capture_batch_idx

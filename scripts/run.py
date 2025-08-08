@@ -23,12 +23,13 @@ def main(cfg: DictConfig):
     repetition_idx = cfg.data.repetition
     batch_size = cfg.data.batch_size
     batch_indices = cfg.data.capture_batch_idx
+    final_results_dir = cfg.paths.final_results_dir
 
     print(f"\n=== Running pipeline: {class_a}/{class_b}, Rep={repetition_idx}, BS={batch_size}")
 
 
     run_capture_main(cfg)
-    metrics = run_reconstruction_main(cfg)
+    run_reconstruction_main(cfg)
 
     cfg.data.original = False
     run_classify_clip_main(cfg)
@@ -37,12 +38,12 @@ def main(cfg: DictConfig):
     run_classify_clip_main(cfg)
 
     all_results_rows = []
-    exp_run_path = f"saved/{exp_name}/run_{repetition_idx}/batch_size_{batch_size}"
+    exp_run_path = cfg.paths.exp_run_dir
     for batch_idx in batch_indices:
-        classify_clip_json_path_recon = exp_run_path + f"/clip_results/batch_{batch_idx}_recon.json"
-        classify_clip_json_path_ori = exp_run_path + f"/clip_results/batch_{batch_idx}_original.json"
+        clip_results_dir = cfg.paths.clip_results_dir
+        classify_clip_json_path_recon = os.path.join(clip_results_dir, f"batch_{batch_idx}_recon.json")
+        classify_clip_json_path_ori = os.path.join(clip_results_dir, f"batch_{batch_idx}_original.json")
 
-        # ... (Rest of your JSON loading and aggregation code)
         with open(classify_clip_json_path_recon, 'r') as f:
             clip_result_recon_data = json.load(f)
         with open(classify_clip_json_path_ori, 'r') as f:
@@ -67,10 +68,11 @@ def main(cfg: DictConfig):
         })
     
     # 4. Save results to a CSV specific to this run
-    SAVE_DIR_BASE = "saved_experiments/exp2"
-    os.makedirs(SAVE_DIR_BASE, exist_ok=True)
     df = pd.DataFrame(all_results_rows)
-    df.to_csv(os.path.join(SAVE_DIR_BASE, f"{exp_name}_rep_{repetition_idx}_bs_{batch_size}.csv"), index=False)
+
+    os.makedirs(final_results_dir, exist_ok=True)
+    csv_filename = f"{exp_name}_rep_{repetition_idx}_bs_{batch_size}.csv"
+    df.to_csv(os.path.join(final_results_dir, csv_filename), index=False)
 
 if __name__ == "__main__":
     main()

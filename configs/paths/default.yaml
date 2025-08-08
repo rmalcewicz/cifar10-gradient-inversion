@@ -1,0 +1,8 @@
+base_dir: "saved"
+results_dir: "${paths.base_dir}/${experiment.name}/run_${data.repetition}/batch_size_${data.batch_size}"
+batch_data_dir: "${paths.results_dir}/batch_data"
+reconstruction_results_dir: "${paths.results_dir}/results"
+clip_results_dir: "${paths.results_dir}/clip_results"
+final_results_dir: "saved_experiments/${experiment.name}"
+
+clip_base_path: "/zfsauton2/home/rmalcewi/.cache/huggingface/hub/models--openai--clip-vit-base-patch32/snapshots/3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
