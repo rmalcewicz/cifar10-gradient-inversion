@@ -6,7 +6,6 @@ from omegaconf import DictConfig, OmegaConf
 from datetime import datetime
 import wandb
 
-# Import the main functions of the sub-scripts
 from scripts.run_train_capture import main as run_capture_main
 from scripts.run_reconstruction import main as run_reconstruction_main
 from scripts.run_classify_clip import main as run_classify_clip_main
@@ -38,7 +37,6 @@ def main(cfg: DictConfig):
     run_classify_clip_main(cfg)
 
     all_results_rows = []
-    exp_run_path = cfg.paths.exp_run_dir
     for batch_idx in batch_indices:
         clip_results_dir = cfg.paths.clip_results_dir
         classify_clip_json_path_recon = os.path.join(clip_results_dir, f"batch_{batch_idx}_recon.json")
@@ -67,7 +65,6 @@ def main(cfg: DictConfig):
             "timestamp": datetime.now().isoformat()
         })
     
-    # 4. Save results to a CSV specific to this run
     df = pd.DataFrame(all_results_rows)
 
     os.makedirs(final_results_dir, exist_ok=True)

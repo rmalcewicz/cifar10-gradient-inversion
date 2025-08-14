@@ -5,7 +5,7 @@ defaults:
 
 hydra:
   launcher:
-    n_jobs: -1 
+    n_jobs: -1
     backend: "multiprocessing"
 
 experiment:
@@ -20,12 +20,12 @@ data:
   capture_batch_idx: [0, 20, 40, 60, 80]
   repetition: 0
   original: False
-  only_first_layer: True
+  only_first_layer: False
 
 reconstruction:
   tv_coeff: 5e-3
-  num_iterations: 500
-  lr: 0.5
+  num_iterations: 4000
+  lr: 0.1
 
 clip:
   model: "ViT-B/32"

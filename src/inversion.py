@@ -6,7 +6,7 @@ import torchvision.utils as vutils
 from torch.optim.lr_scheduler import StepLR
 import torchvision.transforms.functional as TF
 
-from src.utils import TVLoss, Batch_data
+from src.utils import TVLoss, Batch_data, grad_loss_fn
 from src.model import ConvNet
 from src.evaluation import evaluate_reconstruction
 
@@ -51,7 +51,10 @@ def reconstruct(
     #dummy_input.requires_grad_(True)
 
     optimizer = torch.optim.Adam([dummy_input], lr=lr)
-    scheduler = StepLR(optimizer, step_size=50, gamma=0.8)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[num_iterations // 2.667, 
+                                                                            num_iterations // 1.6, 
+                                                                            num_iterations // 1.142],
+                                                                            gamma=0.1) 
     criterion = nn.CrossEntropyLoss()
     cosine_similarity = nn.CosineSimilarity(dim=0)
     tv = TVLoss
@@ -73,13 +76,16 @@ def reconstruct(
         loss = criterion(output, true_labels)
         
         if only_first:
-            dummy_grad_1 = torch.autograd.grad(loss, model.conv1.parameters(), create_graph=True)
+            dummy_grad = torch.autograd.grad(loss, model.conv1.parameters(), create_graph=True)
         else:
-            dummy_grad_1 = torch.autograd.grad(loss, model.parameters(), create_graph=True)
-        dummy_grad = torch.cat([g.view(-1) for g in dummy_grad_1])
-
-        cos_sim = cosine_similarity(dummy_grad, true_grad)
-        grad_loss = (1 - cos_sim).mean()
+            dummy_grad = torch.autograd.grad(loss, model.parameters(), create_graph=True)
+            
+        #dummy_grad = torch.cat([g.view(-1) for g in dummy_grad_1])
+        
+        #cos_sim = cosine_similarity(dummy_grad, true_grad)
+        #grad_loss = (1 - cos_sim).mean()
+            
+        grad_loss = grad_loss_fn(true_grad, dummy_grad, local = False)
 
         tv_loss = tv(dummy_input)
         total_loss = grad_loss + tv_coeff * tv_loss       
@@ -89,7 +95,8 @@ def reconstruct(
         grad_of_input = dummy_input.grad
 
         optimizer.step()
-        dummy_input.data.clamp_(0, 1)
+        with torch.no_grad():
+            dummy_input.clamp_(0, 1)
         scheduler.step()
 
         # Save debug image every 200 iters
@@ -127,7 +134,7 @@ def reconstruct(
             #print(f"[{i}] Gradient loss: {grad_loss.item():.10f}, Total loss: {total_loss.item():.10f}")
         
         # Sanity check
-        assert dummy_grad.shape == true_grad.shape, f"{dummy_grad.shape} vs {true_grad.shape}"
+        assert dummy_grad[0].shape == true_grad[0].shape, f"{dummy_grad.shape} vs {true_grad.shape}"
         
 
     # Final output
@@ -137,7 +144,7 @@ def reconstruct(
     vutils.save_image(dummy_input.detach().cpu(), f"{output_path}/batch_{batch_idx}/reconstruction.png", nrow=8, normalize=True)
     if wandb_log:
         grid_image = vutils.make_grid(dummy_input.detach().cpu(), nrow=4, padding=2, normalize=True)
-        image_for_wandb = grid_image.mul(255).add_(0.5).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()
+        image_for_wandb = grid_image.mul(255).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()
         wandb.log({"reconstructed_images_grid": wandb.Image(image_for_wandb)})
 
     # Final evaluation

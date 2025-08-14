@@ -44,3 +44,25 @@ class Batch_data:
         target_path = f"{batch_path}/batch_{batch_n}"
         os.remove(f"{target_path}/batch_gradient.pt")
         os.remove(f"{target_path}/model_state.pt")
+
+def grad_loss_fn(true_grad, grad, local = False):
+
+    indices = torch.arange(len(true_grad))
+    weights = true_grad[0].new_ones(len(true_grad))
+    
+    pnorm = [0, 0]
+    costs = 0
+    for i in indices:
+        if local:
+            costs += 1 - torch.nn.functional.cosine_similarity(grad[i].flatten(),
+                                                               true_grad[i].flatten(),
+                                                               0, 1e-10) * weights[i]
+        else:
+            costs -= (grad[i] * true_grad[i]).sum() * weights[i]
+            pnorm[0] += grad[i].pow(2).sum() * weights[i]
+            pnorm[1] += true_grad[i].pow(2).sum() * weights[i]
+
+    if not local:
+        costs = 1 + costs / pnorm[0].sqrt() / pnorm[1].sqrt()
+
+    return costs

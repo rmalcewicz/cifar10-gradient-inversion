@@ -53,18 +53,18 @@ def capture_batch(
 
         if i in capture_batch_idx:
             if only_first:
-                grad = [p.grad.clone().detach() for p in model[0].parameters()]
+                grad = [p.grad.clone().detach() for p in model.conv1.parameters()]
             else:
                 grad = [p.grad.clone().detach() for p in model.parameters()]
                 
-            flat_grad = torch.cat([g.view(-1) for g in grad])
+            #flat_grad = torch.cat([g.view(-1) for g in grad])
 
             batch_data_path = os.path.join(output_path, f"batch_{i}")
 
             os.makedirs(f"{batch_data_path}", exist_ok=True)
             torch.save(images.detach().cpu(), f"{batch_data_path}/batch_images.pt")
             torch.save(labels.detach().cpu(), f"{batch_data_path}/batch_labels.pt")
-            torch.save(flat_grad.cpu(), f"{batch_data_path}/batch_gradient.pt")
+            torch.save(grad, f"{batch_data_path}/batch_gradient.pt")
             torch.save(model.state_dict(), f"{batch_data_path}/model_state.pt")
 
             #print(f"Saved batch {i}")
