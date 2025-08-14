@@ -46,7 +46,8 @@ def main(cfg: DictConfig):
             num_iterations=cfg.reconstruction.num_iterations,
             tv_coeff=cfg.reconstruction.tv_coeff,
             lr=cfg.reconstruction.lr,
-            wandb_log = cfg.wandb_log
+            wandb_log = cfg.wandb_log,
+            only_first=cfg.data.only_first_layer
         )
         if cfg.wandb_log:
             wandb.finish()

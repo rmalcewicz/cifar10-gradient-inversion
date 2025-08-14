@@ -22,7 +22,9 @@ def reconstruct(
     lr: float = 0.1,
     wandb_log: bool = False,
     early_stopping_patience: int = 500,
-    early_stopping_min_delta: float = 1e-7
+    early_stopping_min_delta: float = 1e-7,
+    early_stop: bool = False,
+    only_first: bool = True
 ):
     if wandb_log:
         import wandb
@@ -49,7 +51,7 @@ def reconstruct(
     #dummy_input.requires_grad_(True)
 
     optimizer = torch.optim.Adam([dummy_input], lr=lr)
-    scheduler = StepLR(optimizer, step_size=100, gamma=0.9)
+    scheduler = StepLR(optimizer, step_size=50, gamma=0.8)
     criterion = nn.CrossEntropyLoss()
     cosine_similarity = nn.CosineSimilarity(dim=0)
     tv = TVLoss
@@ -69,8 +71,11 @@ def reconstruct(
 
         output = model(dummy_input)
         loss = criterion(output, true_labels)
-
-        dummy_grad_1 = torch.autograd.grad(loss, model.parameters(), create_graph=True)
+        
+        if only_first:
+            dummy_grad_1 = torch.autograd.grad(loss, model.conv1.parameters(), create_graph=True)
+        else:
+            dummy_grad_1 = torch.autograd.grad(loss, model.parameters(), create_graph=True)
         dummy_grad = torch.cat([g.view(-1) for g in dummy_grad_1])
 
         cos_sim = cosine_similarity(dummy_grad, true_grad)
@@ -93,26 +98,29 @@ def reconstruct(
 
         # Log to wandb
         if wandb_log and (i % 10 == 0 or i == num_iterations - 1):
-            import wandb
+            metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
             wandb.log({
                 "iteration": i,
                 "grad_loss": grad_loss.item(),
                 "tv_loss": tv_loss.item(),
                 "total_loss": total_loss.item(),
-                "gradient_norm": grad_of_input.norm().item() 
+                "gradient_norm": grad_of_input.norm().item(),
+                "psnr": metrics["psnr"],
+                "ssim": metrics["ssim"]
             })
-        
-        if total_loss.item() + early_stopping_min_delta < best_loss:
-            best_loss = total_loss.item()
-            best_dummy_input = dummy_input.clone().detach()
-            patience_counter = 0
-        else:
-            patience_counter += 1
-            if patience_counter >= early_stopping_patience:
-                print(f"Stopping early at iteration {i}: loss has not improved for {early_stopping_patience} iterations.")
-                if wandb_log:
-                    wandb.log({"early_stop": i})
-                break
+
+        if early_stop:
+            if total_loss.item() + early_stopping_min_delta < best_loss:
+                best_loss = total_loss.item()
+                best_dummy_input = dummy_input.clone().detach()
+                patience_counter = 0
+            else:
+                patience_counter += 1
+                if patience_counter >= early_stopping_patience:
+                    print(f"Stopping early at iteration {i}: loss has not improved for {early_stopping_patience} iterations.")
+                    if wandb_log:
+                        wandb.log({"early_stop": i})
+                    break
         
         # Print to console
         #if i % 50 == 0:
@@ -132,9 +140,6 @@ def reconstruct(
         image_for_wandb = grid_image.mul(255).add_(0.5).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()
         wandb.log({"reconstructed_images_grid": wandb.Image(image_for_wandb)})
 
-        grid_image = vutils.make_grid(best_dummy_input.detach().cpu(), nrow=4, padding=2, normalize=True)
-        image_for_wandb = grid_image.mul(255).add_(0.5).clamp_(0, 255).permute(1,2,0).to(torch.uint8).numpy()
-        wandb.log({"best_reconstructed_images_grid": wandb.Image(image_for_wandb)})
     # Final evaluation
     metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
     #print(f"PSNR: {metrics['psnr']:.3f}, SSIM: {metrics['ssim']:.3f}")

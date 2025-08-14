@@ -13,7 +13,8 @@ def capture_batch(
     output_path: str,
     capture_batch_idx: list = [100],
     experiment_name: str = "exp1",
-    batch_size: int = 1
+    batch_size: int = 1,
+    only_first: bool = True
 ):
     """
     Captures batch images, labels, gradients, and model states at specified batch indices.
@@ -51,7 +52,11 @@ def capture_batch(
         loss.backward()
 
         if i in capture_batch_idx:
-            grad = [p.grad.clone().detach() for p in model.parameters()]
+            if only_first:
+                grad = [p.grad.clone().detach() for p in model[0].parameters()]
+            else:
+                grad = [p.grad.clone().detach() for p in model.parameters()]
+                
             flat_grad = torch.cat([g.view(-1) for g in grad])
 
             batch_data_path = os.path.join(output_path, f"batch_{i}")

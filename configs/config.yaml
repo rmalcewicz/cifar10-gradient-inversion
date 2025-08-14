@@ -20,11 +20,12 @@ data:
   capture_batch_idx: [0, 20, 40, 60, 80]
   repetition: 0
   original: False
+  only_first_layer: True
 
 reconstruction:
   tv_coeff: 5e-3
-  num_iterations: 10000
-  lr: 0.1
+  num_iterations: 500
+  lr: 0.5
 
 clip:
   model: "ViT-B/32"

@@ -15,7 +15,7 @@ def main(cfg:DictConfig):
     run_idx = cfg.data.repetition
     batch_size = cfg.data.batch_size
 
-    output_path = cfg.batch_data_dir
+    output_path = cfg.paths.batch_data_dir
     os.makedirs(output_path, exist_ok=True)
 
     capture_batch(
@@ -25,7 +25,8 @@ def main(cfg:DictConfig):
         experiment_name=cfg.experiment.name,
         output_path=output_path,
         batch_size=cfg.data.batch_size,
-        capture_batch_idx=cfg.data.capture_batch_idx
+        capture_batch_idx=cfg.data.capture_batch_idx,
+        only_first=cfg.data.only_first_layer
     )
 
 if __name__ == "__main__":
