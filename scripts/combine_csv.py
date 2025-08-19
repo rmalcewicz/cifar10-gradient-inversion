@@ -2,9 +2,10 @@ import pandas as pd
 import glob
 import os
 
+
 def combine_csv_files(base_dir, output_filename="combined_results.csv"):
     all_dataframes = []
-    
+
     # Create a glob pattern to find all CSV files in immediate subdirectories of base_dir
     pattern = os.path.join(base_dir, "*.csv")
     file_paths = glob.glob(pattern)
@@ -14,7 +15,7 @@ def combine_csv_files(base_dir, output_filename="combined_results.csv"):
         return
 
     print(f"Found {len(file_paths)} files to process.")
-    
+
     for file_path in file_paths:
         try:
             df = pd.read_csv(file_path)
@@ -38,8 +39,9 @@ def combine_csv_files(base_dir, output_filename="combined_results.csv"):
     else:
         print("No dataframes to combine.")
 
+
 if __name__ == "__main__":
     # The base directory where your experiment subdirectories are located
     experiment_base_path = "saved_experiments/exp1"
-    
+
     combine_csv_files(experiment_base_path)

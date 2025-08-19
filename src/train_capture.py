@@ -5,6 +5,7 @@ import torch.optim as optim
 from src.model import SimpleCNN, ConvNet
 from src.data import get_binary_cifar10
 
+
 # saves the batches information in /saved/exp_name each batch in individual dir batch_{i}
 def capture_batch(
     device: str,
@@ -14,7 +15,7 @@ def capture_batch(
     capture_batch_idx: list = [100],
     experiment_name: str = "exp1",
     batch_size: int = 1,
-    only_first: bool = True
+    only_first: bool = True,
 ):
     """
     Captures batch images, labels, gradients, and model states at specified batch indices.
@@ -33,7 +34,7 @@ def capture_batch(
     if not capture_batch_idx:
         print("capture_batch_idx is empty. No batches will be captured.")
         return
-    
+
     model = ConvNet(input_shape=(3, 32, 32), n_classes=2).to(device)
 
     loader = get_binary_cifar10(class_a, class_b, batch_size=batch_size)
@@ -56,8 +57,8 @@ def capture_batch(
                 grad = [p.grad.clone().detach() for p in model.conv1.parameters()]
             else:
                 grad = [p.grad.clone().detach() for p in model.parameters()]
-                
-            #flat_grad = torch.cat([g.view(-1) for g in grad])
+
+            # flat_grad = torch.cat([g.view(-1) for g in grad])
 
             batch_data_path = os.path.join(output_path, f"batch_{i}")
 
@@ -67,9 +68,9 @@ def capture_batch(
             torch.save(grad, f"{batch_data_path}/batch_gradient.pt")
             torch.save(model.state_dict(), f"{batch_data_path}/model_state.pt")
 
-            #print(f"Saved batch {i}")
+            # print(f"Saved batch {i}")
 
             if i >= max(capture_batch_idx):
                 break
-    
+
         optimizer.step()

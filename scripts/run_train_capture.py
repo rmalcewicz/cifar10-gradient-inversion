@@ -5,11 +5,11 @@ from omegaconf import DictConfig
 
 from src.train_capture import capture_batch
 
-@hydra.main(config_path="../configs", config_name="config", version_base=None)
 
-def main(cfg:DictConfig):
+@hydra.main(config_path="../configs", config_name="config", version_base=None)
+def main(cfg: DictConfig):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    #print(f"Running on {device}")
+    # print(f"Running on {device}")
 
     exp_name = cfg.experiment.name
     run_idx = cfg.data.repetition
@@ -26,8 +26,9 @@ def main(cfg:DictConfig):
         output_path=output_path,
         batch_size=cfg.data.batch_size,
         capture_batch_idx=cfg.data.capture_batch_idx,
-        only_first=cfg.data.only_first_layer
+        only_first=cfg.data.only_first_layer,
     )
+
 
 if __name__ == "__main__":
     main()

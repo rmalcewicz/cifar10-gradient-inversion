@@ -2,6 +2,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from torchvision import datasets, transforms
 import torchvision
 
+
 class RemappedSubset(Dataset):
     def __init__(self, subset, class_a_idx, class_b_idx):
         self.subset = subset
@@ -13,6 +14,7 @@ class RemappedSubset(Dataset):
     def __getitem__(self, idx):
         x, label = self.subset[idx]
         return x, self.mapping[label]
+
 
 def get_binary_cifar10(class_a, class_b, batch_size):
     transform = transforms.Compose([transforms.ToTensor()])
@@ -26,4 +28,4 @@ def get_binary_cifar10(class_a, class_b, batch_size):
     remapped_dataset = RemappedSubset(binary_subset, idx_a, idx_b)
 
     return DataLoader(remapped_dataset, batch_size=batch_size, shuffle=True)
-    #return DataLoader(cifar, batch_size=batch_size, shuffle=True)
+    # return DataLoader(cifar, batch_size=batch_size, shuffle=True)

@@ -7,6 +7,7 @@ from omegaconf import DictConfig, OmegaConf
 from src.inversion import reconstruct
 from src.utils import Batch_data
 
+
 @hydra.main(config_path="../configs", config_name="config", version_base=None)
 def main(cfg: DictConfig):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -24,9 +25,8 @@ def main(cfg: DictConfig):
     batch_idx = cfg.data.capture_batch_idx
 
     for idx in batch_idx:
-
         batch_data = Batch_data()
-        batch_data.load(input_path, idx, skip = False)
+        batch_data.load(input_path, idx, skip=False)
         batch_data.remove(input_path, idx)
 
         wandb_config_dict = OmegaConf.to_container(cfg, resolve=True, throw_on_missing=False)
@@ -35,7 +35,7 @@ def main(cfg: DictConfig):
                 project="cifar10-gradient-inversion",
                 name=f"{exp_name}/run_{run_idx}/batch_size_{batch_size}/batch_{idx}",
                 config=wandb_config_dict,
-                dir=exp_dir
+                dir=exp_dir,
             )
 
         recon = reconstruct(
@@ -46,11 +46,12 @@ def main(cfg: DictConfig):
             num_iterations=cfg.reconstruction.num_iterations,
             tv_coeff=cfg.reconstruction.tv_coeff,
             lr=cfg.reconstruction.lr,
-            wandb_log = cfg.wandb_log,
-            only_first=cfg.data.only_first_layer
+            wandb_log=cfg.wandb_log,
+            only_first=cfg.data.only_first_layer,
         )
         if cfg.wandb_log:
             wandb.finish()
+
 
 if __name__ == "__main__":
     main()
