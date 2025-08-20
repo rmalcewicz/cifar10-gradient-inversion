@@ -5,7 +5,7 @@ defaults:
 
 hydra:
   launcher:
-    n_jobs: -1
+    n_jobs: 25
     backend: "multiprocessing"
 
 experiment:
@@ -24,9 +24,13 @@ data:
 
 reconstruction:
   tv_coeff: 5e-3
+  clip_coeff: 5e-3
   num_iterations: 4000
   lr: 0.1
-
+  reruns: 5
+  guidance: True
+  oracle_guidance: True
+  
 clip:
   model: "ViT-B/32"
   prompts: [
@@ -42,4 +46,11 @@ clip:
     "a photo of a truck"
   ]
 
-wandb_log: False
+skip:
+  clip: True
+  capture: True
+  reconstruct: False
+
+wandb_log: True
+group_name: "clip_guidance_broader_exp"
+

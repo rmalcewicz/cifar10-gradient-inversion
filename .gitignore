@@ -12,3 +12,5 @@ saved*/
 outputs/
 saved_experiments/
 multirun/
+
+uv.lock
