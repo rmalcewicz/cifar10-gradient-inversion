@@ -28,8 +28,8 @@ reconstruction:
   num_iterations: 4000
   lr: 0.1
   reruns: 5
-  guidance: True
-  oracle_guidance: True
+  guidance: False
+  oracle_guidance: False
   
 clip:
   model: "ViT-B/32"
@@ -52,5 +52,5 @@ skip:
   reconstruct: False
 
 wandb_log: True
-group_name: "clip_guidance_broader_exp"
+group_name: "default"
 

@@ -5,7 +5,7 @@ import torchvision.utils as vutils
 
 from src.utils import TVLoss, Batch_data, grad_loss_fn, clip_guidance_loss
 from src.model import ConvNet
-from src.evaluation import evaluate_reconstruction
+from src.evaluation import evaluate_reconstruction, smart_evaluation
 
 
 def reconstruct(
@@ -120,6 +120,7 @@ def reconstruct(
         # Log to wandb
         if wandb_log and (i % 10 == 0 or i == num_iterations - 1):
             metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
+            smart_ssim = smart_evaluation(dummy_input.detach(), true_images, true_labels)
 
             wandb.log(
                 {
@@ -131,6 +132,7 @@ def reconstruct(
                     "gradient_norm": grad_of_input.norm().item(),
                     "psnr": metrics["psnr"],
                     "ssim": metrics["ssim"],
+                    "smart_ssim": smart_ssim,
                 }
             )
 
