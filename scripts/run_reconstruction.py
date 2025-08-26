@@ -28,7 +28,7 @@ def main(cfg: DictConfig):
     input_path = cfg.paths.batch_data_dir
     os.makedirs(reconstruction_results_dir, exist_ok=True)
 
-    # guidence
+    # guidance
     guidance = [-1, -1]
     if cfg.reconstruction.oracle_guidance:
         class_a_index = cifar10_class_names.index(cfg.data.class_a)
@@ -44,7 +44,7 @@ def main(cfg: DictConfig):
 
         for rerun_n in range(cfg.reconstruction.reruns):
             rerun_output_path = os.path.join(
-                reconstruction_results_dir, f"rerun_{rerun_n}"
+                reconstruction_results_dir  # , f"rerun_{rerun_n}"
             )
             os.makedirs(rerun_output_path, exist_ok=True)
 

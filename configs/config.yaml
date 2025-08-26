@@ -5,12 +5,12 @@ defaults:
 
 hydra:
   launcher:
-    n_jobs: 25
+    n_jobs: -1
     backend: "multiprocessing"
 
 experiment:
   name: "${data.class_a}_vs_${data.class_b}"
-  save_dir: "saved"
+  save_dir: "batch_aggeregation_exp"
   seed: 42
 
 data:
@@ -21,13 +21,14 @@ data:
   repetition: 0
   original: False
   only_first_layer: False
+  aggregate: True
 
 reconstruction:
   tv_coeff: 5e-3
   clip_coeff: 5e-3
-  num_iterations: 4000
+  num_iterations: 1000
   lr: 0.1
-  reruns: 5
+  reruns: 1
   guidance: False
   oracle_guidance: False
   
@@ -47,10 +48,10 @@ clip:
   ]
 
 skip:
-  clip: True
-  capture: True
+  clip: False
+  capture: False
   reconstruct: False
 
-wandb_log: True
+wandb_log: False
 group_name: "default"
 

@@ -1,4 +1,4 @@
-base_dir: "saved"
+base_dir: "batch_aggeregation_exp"
 results_dir: "${paths.base_dir}/${experiment.name}/run_${data.repetition}/batch_size_${data.batch_size}"
 batch_data_dir: "${paths.results_dir}/batch_data"
 reconstruction_results_dir: "${paths.results_dir}/results"

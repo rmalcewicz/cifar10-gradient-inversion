@@ -10,7 +10,9 @@ saved2/
 saved/
 saved*/
 outputs/
-saved_experiments/
+saved_experiments*/
 multirun/
+batch_aggeregation_exp/
+data_output_agg/
 
 uv.lock

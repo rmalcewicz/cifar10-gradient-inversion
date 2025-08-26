@@ -177,9 +177,16 @@ def reconstruct(
 
     # Final evaluation
     metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
+    smart_ssim = smart_evaluation(dummy_input.detach(), true_images, true_labels)
     # print(f"PSNR: {metrics['psnr']:.3f}, SSIM: {metrics['ssim']:.3f}")
 
     if wandb_log:
-        wandb.log({"psnr": metrics["psnr"], "ssim": metrics["ssim"]})
+        wandb.log(
+            {
+                "final_psnr": metrics["psnr"],
+                "final_ssim": metrics["ssim"],
+                "final_smart_ssim": smart_ssim,
+            }
+        )
 
     return dummy_input.detach().cpu()
