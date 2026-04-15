@@ -22,6 +22,7 @@ def reconstruct(
     early_stopping_min_delta: float = 1e-7,
     early_stop: bool = False,
     only_first: bool = True,
+    n_dummy: int = 0,
     guidance: list = [-1, -1],
     clip_model=None,
     clip_processor=None,
@@ -32,6 +33,7 @@ def reconstruct(
     true_grad = batch_data.gradient
     true_labels = batch_data.labels
     true_images = batch_data.images
+    true_batch_size = len(true_labels)
 
     model = ConvNet(input_shape=(3, 32, 32), n_classes=2).to(device)
     model.load_state_dict(batch_data.model_state)
@@ -41,8 +43,12 @@ def reconstruct(
     # dummy_input = torch.randn((len(true_labels), 3, 32, 32)).to(device).detach()
     # dummy_input.requires_grad_(True)
     # dummy_input.data.clamp_(0, 1)
+    if n_dummy == 0:
+        n_dummy = len(true_labels)
+    else:
+        true_labels = torch.tensor([0,1])
 
-    dummy_input = (torch.rand((len(true_labels), 3, 32, 32), dtype=torch.float32)).to(device)
+    dummy_input = (torch.rand((n_dummy, 3, 32, 32), dtype=torch.float32)).to(device)
     dummy_input.requires_grad_(True)
 
     # dummy_input = (torch.full((len(true_labels), 3, 32, 32), 0.5)).to(device)
@@ -119,22 +125,26 @@ def reconstruct(
 
         # Log to wandb
         if wandb_log and (i % 10 == 0 or i == num_iterations - 1):
-            metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
-            smart_ssim = smart_evaluation(dummy_input.detach(), true_images, true_labels)
+            if n_dummy == 0:
+                metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
+                smart_ssim = smart_evaluation(dummy_input.detach(), true_images, true_labels)
 
-            wandb.log(
-                {
-                    "iteration": i,
-                    "grad_loss": grad_loss.item(),
-                    "tv_loss": tv_loss.item(),
-                    "clip_loss": clip_loss.item(),
-                    "total_loss": total_loss.item(),
-                    "gradient_norm": grad_of_input.norm().item(),
-                    "psnr": metrics["psnr"],
-                    "ssim": metrics["ssim"],
-                    "smart_ssim": smart_ssim,
-                }
-            )
+            wandb_metrics = {
+                "iteration": i,
+                "grad_loss": grad_loss.item(),
+                "tv_loss": tv_loss.item(),
+                "clip_loss": clip_loss.item(),
+                "total_loss": total_loss.item(),
+                "gradient_norm": grad_of_input.norm().item(),
+            }
+            if n_dummy == true_batch_size:
+                metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
+                smart_ssim = smart_evaluation(dummy_input.detach(), true_images, true_labels)
+                wandb_metrics["psnr"] = metrics["psnr"]
+                wandb_metrics["ssim"] = metrics["ssim"]
+                wandb_metrics["smart_ssim"] = smart_ssim
+
+            wandb.log(wandb_metrics)
 
         if early_stop:
             if total_loss.item() + early_stopping_min_delta < best_loss:
@@ -176,11 +186,12 @@ def reconstruct(
         wandb.log({"reconstructed_images_grid": wandb.Image(image_for_wandb)})
 
     # Final evaluation
-    metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
-    smart_ssim = smart_evaluation(dummy_input.detach(), true_images, true_labels)
+    if n_dummy == 0:
+        metrics = evaluate_reconstruction(dummy_input.detach(), true_images)
+        smart_ssim = smart_evaluation(dummy_input.detach(), true_images, true_labels)
     # print(f"PSNR: {metrics['psnr']:.3f}, SSIM: {metrics['ssim']:.3f}")
 
-    if wandb_log:
+    if wandb_log and n_dummy == true_batch_size:
         wandb.log(
             {
                 "final_psnr": metrics["psnr"],
@@ -189,4 +200,6 @@ def reconstruct(
             }
         )
 
-    return dummy_input.detach().cpu()
+        return dummy_input.detach().cpu(), smart_ssim, metrics["ssim"]
+    
+    return dummy_input.detach().cpu(), 0, 0

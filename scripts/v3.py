@@ -5,7 +5,7 @@ import os
 import json
 
 # --- File Paths and Directories ---
-csv_path = "/zfsauton2/home/rmalcewi/summer2025/cifar10-gradient-inversion/saved_experiments/combined_results.csv"
+csv_path = "/zfsauton2/home/rmalcewi/summer2025/cifar10-gradient-inversion/saved_experiments_pres/combined_results.csv"
 output_dir = "data_output_agg"
 plots_dir = os.path.join(output_dir, "plots")
 json_dir = os.path.join(output_dir, "json")

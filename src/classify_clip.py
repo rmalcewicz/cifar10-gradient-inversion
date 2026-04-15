@@ -77,15 +77,27 @@ def calculate_prediction(class_a, class_b, similarity_probabilities, labels_tens
     final_selected_class_names = [cifar10_class_names[idx.item()] for idx in final_top_class]
     # print("Final selected class names:", final_selected_class_names)
     succeses = 0
+    success = [0, 0]
     if class_a == final_selected_class_names[0]:
-        succeses += 1
+        success[0] = 1
     if class_b == final_selected_class_names[1]:
-        succeses += 1
+        success[1] = 1
+    succeses = sum(success)
 
     # print(succeses)
+    all_counts = torch.bincount(labels_tensor, minlength=2)
+    n_examples_0 = all_counts[0].item()
+    n_examples_1 = all_counts[1].item()
+    majority_label = torch.argmax(all_counts).item()
     final_result_dict = {
         "successes": succeses,
+        "success_0": success[0],
+        "success_1": success[1],
+        "majority_success": success[majority_label],
         "selected_class_0": final_selected_class_names[0],
         "selected_class_1": final_selected_class_names[1],
+        "n_examples_0": n_examples_0,
+        "n_examples_1": n_examples_1,
+        "majority_class": majority_label
     }
     return final_result_dict

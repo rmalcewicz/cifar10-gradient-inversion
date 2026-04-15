@@ -30,10 +30,13 @@ def main(cfg: DictConfig):
 
     # guidance
     guidance = [-1, -1]
+    class_a_index = cifar10_class_names.index(cfg.data.class_a)
+    class_b_index = cifar10_class_names.index(cfg.data.class_b)
+
     if cfg.reconstruction.oracle_guidance:
-        class_a_index = cifar10_class_names.index(cfg.data.class_a)
-        class_b_index = cifar10_class_names.index(cfg.data.class_b)
         guidance = [class_a_index, class_b_index]
+    if cfg.reconstruction.swap_guidance:
+        guidance = [class_b_index, class_a_index]
 
     batch_idx = cfg.data.capture_batch_idx
 
@@ -41,7 +44,8 @@ def main(cfg: DictConfig):
         batch_data = Batch_data()
         batch_data.load(input_path, idx, skip=False)
         # batch_data.remove(input_path, idx)
-
+        best_smart_ssim = 0
+        best_ssim = 0
         for rerun_n in range(cfg.reconstruction.reruns):
             rerun_output_path = os.path.join(
                 reconstruction_results_dir  # , f"rerun_{rerun_n}"
@@ -60,7 +64,7 @@ def main(cfg: DictConfig):
                     dir=os.path.join("saved_experiments", exp_name),
                 )
 
-            reconstruct(
+            _, smart_ssim, ssim = reconstruct(
                 batch_data=batch_data,
                 output_path=rerun_output_path,
                 batch_idx=idx,
@@ -74,10 +78,29 @@ def main(cfg: DictConfig):
                 guidance=guidance,
                 clip_model=model,
                 clip_processor=processor,
+                n_dummy=cfg.reconstruction.n_dummy
             )
+            if smart_ssim > best_smart_ssim:
+                best_smart_ssim = smart_ssim
+            if ssim > best_ssim:
+                best_ssim = ssim
+
             if cfg.wandb_log:
                 wandb.finish()
 
+        if cfg.wandb_log:
+            wandb_config_dict = OmegaConf.to_container(
+                cfg, resolve=True, throw_on_missing=False
+            )
+            wandb.init(
+                project="cifar10-gradient-inversion",
+                group=cfg.group_name,
+                name=f"{exp_name}/run_{run_idx}/batch_size_{batch_size}/batch_{idx}/best_run",
+                config=wandb_config_dict,
+                dir=os.path.join("saved_experiments", exp_name),
+            )
+            wandb.log({"best_smart_ssim": best_smart_ssim, "best_ssim": best_ssim})
+            wandb.finish()
 
 if __name__ == "__main__":
     main()

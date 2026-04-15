@@ -37,6 +37,8 @@ def main(cfg: DictConfig):
     # run_idx =cfg.data.repetition
     # batch_size = cfg.data.batch_size
 
+    n_aggregate = cfg.data.n_aggregate
+
     class_a = cfg.data.class_a
     class_b = cfg.data.class_b
 
@@ -48,8 +50,8 @@ def main(cfg: DictConfig):
 
     all_labels = []
     all_sim = []
-
-    for idx in batch_idx:
+    agg_counter = 0
+    for i, idx in enumerate(batch_idx):
         images_batch_file = os.path.join(recons_path, f"batch_{idx}_images.pt")
         labels_batch_file = os.path.join(recons_path, f"batch_{idx}_labels.pt")
 
@@ -92,18 +94,23 @@ def main(cfg: DictConfig):
             json.dump(final_result_dict, f, indent=4)
         # print(f"Results saved to: {json_path}")
 
-    if cfg.data.aggregate:
-        aggregated_result_dict = calculate_prediction(
-            class_a, class_b, torch.cat(all_sim), torch.cat(all_labels)
-        )
+        if cfg.data.aggregate and ((i+1) % n_aggregate) == 0:
+            aggregated_result_dict = calculate_prediction(
+                class_a, class_b, torch.cat(all_sim), torch.cat(all_labels)
+            )
+            json_agg_suffix = "original" if cfg.data.original else "recon"
+            json_agg_path = os.path.join(
+                output_path, 
+                f"{json_agg_suffix}_agg_{agg_counter}.json"
+            )
+            
+            with open(json_agg_path, "w") as f:
+                json.dump(aggregated_result_dict, f, indent=4)
+            
+            agg_counter += 1
 
-        os.makedirs(output_path, exist_ok=True)
-        json_path = output_path + "/recon_agg.json"
-        if cfg.data.original:
-            json_path = output_path + "/original_agg.json"
-        with open(json_path, "w") as f:
-            json.dump(aggregated_result_dict, f, indent=4)
-
-
+            all_labels = []
+            all_sim = []
+            
 if __name__ == "__main__":
     main()
